@@ -1,9 +1,6 @@
 const mongoose=require('mongoose')
 const userSchema=mongoose.Schema({
-    name:{
-        type:String,
-        required:true,
-    },email:{
+    email:{
         type:String,
         required:true,
         unique:true
@@ -14,5 +11,5 @@ const userSchema=mongoose.Schema({
         type:String
     }
 })
-const Users=mongoose.model('User',userSchema)
-module.exports=Users
+const Admins=mongoose.model('Admin',userSchema)
+module.exports=Admins
