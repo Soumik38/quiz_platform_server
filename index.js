@@ -7,6 +7,7 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cors())
 require('./database/connection')
 
+
 app.get('/',(req,res)=>{
     res.send('Backend')
 })
@@ -91,7 +92,8 @@ app.post('/attempt',async(req,res)=>{
         const {email,marks,qualify,date}=req.body
         console.log(req.body)
         const newAttempt = new Attempts({email,marks,qualify,date})
-        Users.updateOne({email:email},{$set:{attempts:(attempts+1)}})
+        
+        await Users.updateOne({email:email},{$inc:{attempts:1}})
         newAttempt.save()
         res.json('success')
     }catch(e){
