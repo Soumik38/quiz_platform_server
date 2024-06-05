@@ -1,5 +1,5 @@
 const mongoose=require('mongoose')
-// require('dotenv').config()
-mongoose.connect('mongodb+srv://soumiksahaasansol:1N2TIk0tVoQIX1A8@cluster0.nliqasy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+require('dotenv').config()
+mongoose.connect(process.env.MONGO_URL)
 .then(()=>console.log('db connected'))
 .catch((e)=>console.log('error',e))

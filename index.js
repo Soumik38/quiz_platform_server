@@ -1,6 +1,9 @@
 const express=require('express')
 const app = express()
 const cors=require('cors')
+const jwt=require('jsonwebtoken')
+require('dotenv').config()
+
 const server=require('http').createServer(app)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -22,12 +25,18 @@ app.post('/signup',async (req,res)=>{
         const { name, email, pass } = req.body
         const alreadyExists = await Users.findOne({ email })
         if (alreadyExists) {
-            res.json('exists')
+            res.json({auth:'exists'})
         }
         else {
             const newUser = new Users({ name, email ,pass,attempts:0})
+            
+            jwt.sign({newUser},process.env.SECRET_KEY, { expiresIn: '2d' },(err, token) => {
+                if(err) { console.log(err) }  
+                console.log(token)
+                res.json({auth:'notexists',token:token})
+            })
             newUser.save()
-            res.json('notexists')
+
         }
     }
     catch (error) {
@@ -41,7 +50,6 @@ app.post('/signin',async (req,res)=>{
     try{
         // console.log(req.body)
         const{email,pass,adminChecked}=req.body
-        console.log(adminChecked)
         let check=null
         if(adminChecked===true){
             check=await Admins.findOne({email:email})
@@ -51,17 +59,57 @@ app.post('/signin',async (req,res)=>{
         // console.log(check)
         if(check){
             if(check.pass===pass){
-                res.json('authorize')
+                // res.json('authorize')
+                jwt.sign({check},process.env.SECRET_KEY, { expiresIn: '2d' },(err, token) => {
+                    if(err) { console.log(err) }  
+                    console.log(token)
+                    res.json({auth:"authorize",token:token})
+                })
             }else{
-                res.json('wrongpass')
+                res.json({auth:'wrongpass'})
             }
         }else{
-            res.json('notexists')
+            res.json({auth:'notexists'})
         }
     }catch(e){
-        res.json('notexists')
+        res.json(e)
     }
   })
+
+
+
+  function verifyToken(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+    if (typeof bearerHeader !== 'undefined') {
+      const bearer = bearerHeader.split(' ');
+      const bearerToken = bearer[1];
+      req.token = bearerToken;
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  }
+  app.get('/checktoken',verifyToken, (req, res) => { //verify the JWT token generated for the user
+    jwt.verify(req.token, process.env.SECRET_KEY , (err, authorizedData) => {
+        // console.log(req.token)
+        if(err){
+            console.log(err)
+            res.json({
+                message:false
+            })
+        } else {
+            res.json({
+                message:true
+            })
+
+        }
+    })
+});
+
+
+
+
+
 
 app.post('/addq',async(req,res)=>{
     
@@ -90,7 +138,7 @@ app.post('/deleteq',async(req,res)=>{
 app.post('/attempt',async(req,res)=>{
     try{
         const {email,marks,qualify,date}=req.body
-        console.log(req.body)
+        // console.log(req.body)
         const newAttempt = new Attempts({email,marks,qualify,date})
         
         await Users.updateOne({email:email},{$inc:{attempts:1}})
