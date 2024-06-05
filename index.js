@@ -29,10 +29,9 @@ app.post('/signup',async (req,res)=>{
         }
         else {
             const newUser = new Users({ name, email ,pass,attempts:0})
-            
             jwt.sign({newUser},process.env.SECRET_KEY, { expiresIn: '2d' },(err, token) => {
                 if(err) { console.log(err) }  
-                console.log(token)
+                // console.log(token)
                 res.json({auth:'notexists',token:token})
             })
             newUser.save()
@@ -62,7 +61,7 @@ app.post('/signin',async (req,res)=>{
                 // res.json('authorize')
                 jwt.sign({check},process.env.SECRET_KEY, { expiresIn: '2d' },(err, token) => {
                     if(err) { console.log(err) }  
-                    console.log(token)
+                    // console.log(token)
                     res.json({auth:"authorize",token:token})
                 })
             }else{
